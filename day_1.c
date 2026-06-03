@@ -34,6 +34,8 @@ int main()
 {
     initializeCanvas();
 
+    graphics[10][10] = '*';
+
     displayCanvas();
 
     return 0;
