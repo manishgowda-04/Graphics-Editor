@@ -2,7 +2,7 @@
 
 char graphics[20][50];
 
-void initializeCanvas()
+void initializeGraphics()
 {
     int i, j;
 
@@ -15,7 +15,7 @@ void initializeCanvas()
     }
 }
 
-void displayCanvas()
+void displayGraphics()
 {
     int i, j;
 
@@ -30,13 +30,44 @@ void displayCanvas()
     }
 }
 
+void drawRectangle(int row, int col, int width, int height)
+{
+    int i, j;
+
+    for(i = row; i < row + height; i++)
+    {
+        for(j = col; j < col + width; j++)
+        {
+            if(i == row || i == row + height - 1 ||
+               j == col || j == col + width - 1)
+            {
+                graphics[i][j] = '*';
+            }
+        }
+    }
+}
+
 int main()
 {
-    initializeCanvas();
+    int r, c, width, height;
 
-    graphics[10][10] = '*';
+    initializeGraphics();
 
-    displayCanvas();
+    printf("Enter row: ");
+    scanf("%d", &r);
+
+    printf("Enter column: ");
+    scanf("%d", &c);
+
+    printf("Enter width: ");
+    scanf("%d", &width);
+
+    printf("Enter height: ");
+    scanf("%d", &height);
+
+    drawRectangle(r, c, width, height);
+
+    displayGraphics();
 
     return 0;
 }
