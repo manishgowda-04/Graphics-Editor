@@ -1,73 +1,137 @@
 #include<stdio.h>
 
-char graphics[20][50];
+char board[20][50];
 
-void initializeGraphics()
+void initBoard()
 {
-    int i, j;
+    int r, c;
 
-    for(i = 0; i < 20; i++)
+    for(r = 0; r < 20; r++)
     {
-        for(j = 0; j < 50; j++)
+        for(c = 0; c < 50; c++)
         {
-            graphics[i][j] = '_';
+            board[r][c] = '_';
         }
     }
 }
 
-void displayGraphics()
+void showBoard()
 {
-    int i, j;
+    int r, c;
 
-    for(i = 0; i < 20; i++)
+    for(r = 0; r < 20; r++)
     {
-        for(j = 0; j < 50; j++)
+        for(c = 0; c < 50; c++)
         {
-            printf("%c", graphics[i][j]);
+            printf("%c", board[r][c]);
         }
 
         printf("\n");
     }
 }
 
-void drawRectangle(int row, int col, int width, int height)
+void drawRect(int sr, int sc, int w, int h)
 {
-    int i, j;
+    int r, c;
 
-    for(i = row; i < row + height; i++)
+    for(r = sr; r < sr + h; r++)
     {
-        for(j = col; j < col + width; j++)
+        for(c = sc; c < sc + w; c++)
         {
-            if(i == row || i == row + height - 1 ||
-               j == col || j == col + width - 1)
+            if(r == sr || r == sr + h - 1 ||
+               c == sc || c == sc + w - 1)
             {
-                graphics[i][j] = '*';
+                board[r][c] = '*';
             }
         }
     }
 }
 
+void drawHLine(int r, int sc, int len)
+{
+    int c;
+
+    for(c = sc; c < sc + len; c++)
+    {
+        board[r][c] = '*';
+    }
+}
+
+void drawVLine(int sr, int c, int len)
+{
+    int r;
+
+    for(r = sr; r < sr + len; r++)
+    {
+        board[r][c] = '*';
+    }
+}
+
 int main()
 {
-    int r, c, width, height;
+    int ch;
 
-    initializeGraphics();
+    initBoard();
 
-    printf("Enter row: ");
-    scanf("%d", &r);
+    printf("1. Draw Rectangle\n");
+    printf("2. Draw Horizontal Line\n");
+    printf("3. Draw Vertical Line\n");
 
-    printf("Enter column: ");
-    scanf("%d", &c);
+    printf("Enter choice: ");
+    scanf("%d", &ch);
 
-    printf("Enter width: ");
-    scanf("%d", &width);
+    if(ch == 1)
+    {
+        int sr, sc, w, h;
 
-    printf("Enter height: ");
-    scanf("%d", &height);
+        printf("Enter row: ");
+        scanf("%d", &sr);
 
-    drawRectangle(r, c, width, height);
+        printf("Enter column: ");
+        scanf("%d", &sc);
 
-    displayGraphics();
+        printf("Enter width: ");
+        scanf("%d", &w);
+
+        printf("Enter height: ");
+        scanf("%d", &h);
+
+        drawRect(sr, sc, w, h);
+    }
+
+    else if(ch == 2)
+    {
+        int r, sc, len;
+
+        printf("Enter row: ");
+        scanf("%d", &r);
+
+        printf("Enter starting column: ");
+        scanf("%d", &sc);
+
+        printf("Enter length: ");
+        scanf("%d", &len);
+
+        drawHLine(r, sc, len);
+    }
+
+    else if(ch == 3)
+    {
+        int sr, c, len;
+
+        printf("Enter starting row: ");
+        scanf("%d", &sr);
+
+        printf("Enter column: ");
+        scanf("%d", &c);
+
+        printf("Enter length: ");
+        scanf("%d", &len);
+
+        drawVLine(sr, c, len);
+    }
+
+    showBoard();
 
     return 0;
 }
