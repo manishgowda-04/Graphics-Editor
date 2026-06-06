@@ -67,6 +67,38 @@ void drawVLine(int sr, int c, int len)
     }
 }
 
+void drawTriangle(int sr, int sc, int h)
+{
+    int r, c;
+
+    for(r = 0; r < h; r++)
+    {
+        for(c = 0; c <= r; c++)
+        {
+            board[sr + r][sc + c] = '*';
+        }
+    }
+}
+
+void drawCircle(int cr, int cc, int rad)
+{
+    int r, c;
+
+    for(r = 0; r < 20; r++)
+    {
+        for(c = 0; c < 50; c++)
+        {
+            int dx = r - cr;
+            int dy = c - cc;
+
+            if(dx * dx + dy * dy <= rad * rad)
+            {
+                board[r][c] = '*';
+            }
+        }
+    }
+}
+
 int main()
 {
     int ch;
@@ -76,6 +108,8 @@ int main()
     printf("1. Draw Rectangle\n");
     printf("2. Draw Horizontal Line\n");
     printf("3. Draw Vertical Line\n");
+    printf("4. Draw Triangle\n");
+    printf("5. Draw Circle\n");
 
     printf("Enter choice: ");
     scanf("%d", &ch);
@@ -129,6 +163,38 @@ int main()
         scanf("%d", &len);
 
         drawVLine(sr, c, len);
+    }
+
+    else if(ch == 4)
+    {
+        int sr, sc, h;
+
+        printf("Enter starting row: ");
+        scanf("%d", &sr);
+
+        printf("Enter starting column: ");
+        scanf("%d", &sc);
+
+        printf("Enter height: ");
+        scanf("%d", &h);
+
+        drawTriangle(sr, sc, h);
+    }
+
+    else if(ch == 5)
+    {
+        int cr, cc, rad;
+
+        printf("Enter center row: ");
+        scanf("%d", &cr);
+
+        printf("Enter center column: ");
+        scanf("%d", &cc);
+
+        printf("Enter radius: ");
+        scanf("%d", &rad);
+
+        drawCircle(cr, cc, rad);
     }
 
     showBoard();
