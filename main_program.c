@@ -99,6 +99,19 @@ void drawCircle(int cr, int cc, int rad)
     }
 }
 
+void eraseArea(int sr, int sc, int w, int h)
+{
+    int r, c;
+
+    for(r = sr; r < sr + h; r++)
+    {
+        for(c = sc; c < sc + w; c++)
+        {
+            board[r][c] = '_';
+        }
+    }
+}
+
 int main()
 {
     int ch;
@@ -110,6 +123,7 @@ int main()
     printf("3. Draw Vertical Line\n");
     printf("4. Draw Triangle\n");
     printf("5. Draw Circle\n");
+    printf("6. Delete Area\n");
 
     printf("Enter choice: ");
     scanf("%d", &ch);
@@ -195,6 +209,25 @@ int main()
         scanf("%d", &rad);
 
         drawCircle(cr, cc, rad);
+    }
+
+    else if(ch == 6)
+    {
+        int sr, sc, w, h;
+
+        printf("Enter starting row: ");
+        scanf("%d", &sr);
+
+        printf("Enter starting column: ");
+        scanf("%d", &sc);
+
+        printf("Enter width: ");
+        scanf("%d", &w);
+
+        printf("Enter height: ");
+        scanf("%d", &h);
+
+        eraseArea(sr, sc, w, h);
     }
 
     showBoard();
