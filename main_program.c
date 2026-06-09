@@ -1,299 +1,298 @@
-#include<stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <conio.h>
+#include <math.h>
+#include <stdbool.h>
 
-char board[20][50];
+#define BOARD_ROWS 20
+#define BOARD_COLS 50
 
-void initBoard()
-{
+char board[BOARD_ROWS][BOARD_COLS];
+
+// UI state
+int cursorRow = 10;
+int cursorCol = 25;
+
+typedef enum {
+    TOOL_DRAW,
+    TOOL_ERASE,
+    TOOL_RECTANGLE,
+    TOOL_HLINE,
+    TOOL_VLINE,
+    TOOL_CIRCLE,
+    TOOL_TRIANGLE
+} ToolMode;
+
+ToolMode currentTool = TOOL_DRAW;
+
+// Two-point system for shapes
+bool point1Set = false;
+int p1Row = -1;
+int p1Col = -1;
+
+HANDLE hConsole;
+
+void initBoard() {
     int r, c;
-
-    for(r = 0; r < 20; r++)
-    {
-        for(c = 0; c < 50; c++)
-        {
+    for(r = 0; r < BOARD_ROWS; r++) {
+        for(c = 0; c < BOARD_COLS; c++) {
             board[r][c] = '_';
         }
     }
 }
 
-void showBoard()
-{
-    int r, c;
-
-    printf("\n");
-
-    for(r = 0; r < 20; r++)
-    {
-        for(c = 0; c < 50; c++)
-        {
-            printf("%c", board[r][c]);
-        }
-
-        printf("\n");
-    }
-
-    printf("\n");
+void setupConsole() {
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    
+    // Hide standard flashing cursor
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    cursorInfo.bVisible = FALSE;
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
 }
 
-void drawRect(int sr, int sc, int w, int h)
-{
-    int r, c;
+void gotoxy(int x, int y) {
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    SetConsoleCursorPosition(hConsole, coord);
+}
 
-    for(r = sr; r < sr + h; r++)
-    {
-        for(c = sc; c < sc + w; c++)
-        {
-            if(r == sr || r == sr + h - 1 ||
-               c == sc || c == sc + w - 1)
-            {
-                board[r][c] = '*';
+void setColor(int textColor, int bgColor) {
+    SetConsoleTextAttribute(hConsole, (bgColor << 4) | textColor);
+}
+
+void drawUI() {
+    gotoxy(0, 0); // Start drawing at top-left
+    
+    setColor(11, 0); // Cyan text
+    printf("====== 2D INTERACTIVE GRAPHICS EDITOR ======\n");
+    setColor(15, 0); // White text
+    
+    for(int r = 0; r < BOARD_ROWS; r++) {
+        for(int c = 0; c < BOARD_COLS; c++) {
+            // Check if cursor is here
+            if (r == cursorRow && c == cursorCol) {
+                setColor(0, 14); // Black text, Yellow bg for cursor
+                printf("+");
+                setColor(15, 0);
+            } 
+            else if (point1Set && r == p1Row && c == p1Col) {
+                setColor(0, 10); // Black text, Green bg for first point
+                printf("o");
+                setColor(15, 0);
+            }
+            else {
+                if (board[r][c] == '*') {
+                    setColor(12, 0); // Light Red for shapes
+                    printf("%c", board[r][c]);
+                    setColor(15, 0);
+                } else {
+                    setColor(8, 0); // Dark Gray for empty board
+                    printf("%c", board[r][c]);
+                    setColor(15, 0);
+                }
+            }
+        }
+        
+        // Render Sidebar
+        setColor(15, 0);
+        if (r == 0) printf("   [ CONTROLS ]");
+        else if (r == 1) printf("   Arrow Keys / WASD : Move Cursor");
+        else if (r == 2) printf("   Space / Enter     : Select / Draw");
+        else if (r == 3) printf("   C                 : Clear Board");
+        else if (r == 4) printf("   Q / ESC           : Quit");
+        else if (r == 6) printf("   [ TOOLS ] (Press 1-7)");
+        else if (r == 7) printf("   %s 1. Freehand Draw", currentTool == TOOL_DRAW ? "->" : "  ");
+        else if (r == 8) printf("   %s 2. Erase Point", currentTool == TOOL_ERASE ? "->" : "  ");
+        else if (r == 9) printf("   %s 3. Rectangle", currentTool == TOOL_RECTANGLE ? "->" : "  ");
+        else if (r == 10) printf("  %s 4. Horiz Line", currentTool == TOOL_HLINE ? "->" : "  ");
+        else if (r == 11) printf("  %s 5. Vert Line", currentTool == TOOL_VLINE ? "->" : "  ");
+        else if (r == 12) printf("  %s 6. Circle", currentTool == TOOL_CIRCLE ? "->" : "  ");
+        else if (r == 13) printf("  %s 7. Triangle", currentTool == TOOL_TRIANGLE ? "->" : "  ");
+        else if (r == 15) printf("   [ STATUS ]");
+        else if (r == 16) printf("   Cursor: (%2d, %2d)", cursorCol, cursorRow);
+        else if (r == 17) {
+            if (currentTool >= TOOL_RECTANGLE) {
+                if (point1Set) printf("   Action: Select End Point...");
+                else printf("   Action: Select Start Point...");
+            } else {
+                printf("   Action: Moving/Drawing...");
+            }
+        }
+
+        // Clear remaining characters on the line
+        printf("                                    \n");
+    }
+}
+
+void drawRect(int sr, int sc, int er, int ec) {
+    if (sr > er) { int temp = sr; sr = er; er = temp; }
+    if (sc > ec) { int temp = sc; sc = ec; ec = temp; }
+    
+    for(int r = sr; r <= er; r++) {
+        for(int c = sc; c <= ec; c++) {
+            if(r == sr || r == er || c == sc || c == ec) {
+                if(r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS)
+                    board[r][c] = '*';
             }
         }
     }
 }
 
-void drawHLine(int r, int sc, int len)
-{
-    int c;
-
-    for(c = sc; c < sc + len; c++)
-    {
-        board[r][c] = '*';
+void drawHLine(int r, int sc, int ec) {
+    if (sc > ec) { int temp = sc; sc = ec; ec = temp; }
+    for(int c = sc; c <= ec; c++) {
+        if(r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS)
+            board[r][c] = '*';
     }
 }
 
-void drawVLine(int sr, int c, int len)
-{
-    int r;
-
-    for(r = sr; r < sr + len; r++)
-    {
-        board[r][c] = '*';
+void drawVLine(int sr, int er, int c) {
+    if (sr > er) { int temp = sr; sr = er; er = temp; }
+    for(int r = sr; r <= er; r++) {
+        if(r >= 0 && r < BOARD_ROWS && c >= 0 && c < BOARD_COLS)
+            board[r][c] = '*';
     }
 }
 
-void drawTriangle(int sr, int sc, int h)
-{
-    int r, c;
-
-    for(r = 0; r < h; r++)
-    {
-        for(c = 0; c <= r; c++)
-        {
-            board[sr + r][sc + c] = '*';
-        }
-    }
-}
-
-void drawCircle(int cr, int cc, int rad)
-{
-    int r, c;
-
-    for(r = 0; r < 20; r++)
-    {
-        for(c = 0; c < 50; c++)
-        {
+void drawCircle(int cr, int cc, int radius) {
+    for(int r = 0; r < BOARD_ROWS; r++) {
+        for(int c = 0; c < BOARD_COLS; c++) {
             int dx = r - cr;
             int dy = c - cc;
-
-            if(dx * dx + dy * dy <= rad * rad)
-            {
+            // Ellipse approx: terminal characters are usually twice as tall as they are wide.
+            if(dx * dx * 4 + dy * dy <= radius * radius) {
                 board[r][c] = '*';
             }
         }
     }
 }
 
-void eraseArea(int sr, int sc, int w, int h)
-{
-    int r, c;
-
-    for(r = sr; r < sr + h; r++)
-    {
-        for(c = sc; c < sc + w; c++)
-        {
-            board[r][c] = '_';
+void drawTriangle(int sr, int sc, int er, int ec) {
+    int h = er - sr;
+    if (h < 0) h = -h;
+    if (h == 0) h = 1;
+    
+    for(int r = 0; r <= h; r++) {
+        for(int c = -r; c <= r; c++) {
+            int dr = sr < er ? sr + r : sr - r;
+            int dc = sc + c;
+            if(dr >= 0 && dr < BOARD_ROWS && dc >= 0 && dc < BOARD_COLS)
+                board[dr][dc] = '*';
         }
     }
 }
 
-void modifyRectangle()
-{
-    int oldSr, oldSc, oldW, oldH;
-    int newSr, newSc, newW, newH;
-
-    printf("Enter old row: ");
-    scanf("%d", &oldSr);
-
-    printf("Enter old column: ");
-    scanf("%d", &oldSc);
-
-    printf("Enter old width: ");
-    scanf("%d", &oldW);
-
-    printf("Enter old height: ");
-    scanf("%d", &oldH);
-
-    eraseArea(oldSr, oldSc, oldW, oldH);
-
-    printf("Enter new row: ");
-    scanf("%d", &newSr);
-
-    printf("Enter new column: ");
-    scanf("%d", &newSc);
-
-    printf("Enter new width: ");
-    scanf("%d", &newW);
-
-    printf("Enter new height: ");
-    scanf("%d", &newH);
-
-    drawRect(newSr, newSc, newW, newH);
+void handleAction() {
+    if (currentTool == TOOL_DRAW) {
+        board[cursorRow][cursorCol] = '*';
+    } else if (currentTool == TOOL_ERASE) {
+        board[cursorRow][cursorCol] = '_';
+    } else {
+        if (!point1Set) {
+            p1Row = cursorRow;
+            p1Col = cursorCol;
+            point1Set = true;
+        } else {
+            switch(currentTool) {
+                case TOOL_RECTANGLE:
+                    drawRect(p1Row, p1Col, cursorRow, cursorCol);
+                    break;
+                case TOOL_HLINE:
+                    drawHLine(cursorRow, p1Col, cursorCol);
+                    break;
+                case TOOL_VLINE:
+                    drawVLine(p1Row, cursorRow, cursorCol);
+                    break;
+                case TOOL_CIRCLE:
+                {
+                    int dx = cursorRow - p1Row;
+                    int dy = cursorCol - p1Col;
+                    int radius = (int)sqrt((double)(dx * dx * 4 + dy * dy));
+                    drawCircle(p1Row, p1Col, radius);
+                    break;
+                }
+                case TOOL_TRIANGLE:
+                    drawTriangle(p1Row, p1Col, cursorRow, cursorCol);
+                    break;
+                default:
+                    break;
+            }
+            point1Set = false;
+        }
+    }
 }
 
-int main()
-{
-    int ch = 0;
-
+int main() {
     initBoard();
+    setupConsole();
+    
+    // Clear screen once
+    system("cls");
 
-    while(ch != 9)
-    {
-        printf("====== 2D GRAPHICS EDITOR ======\n");
-        printf("1. Draw Rectangle\n");
-        printf("2. Draw Horizontal Line\n");
-        printf("3. Draw Vertical Line\n");
-        printf("4. Draw Triangle\n");
-        printf("5. Draw Circle\n");
-        printf("6. Delete Area\n");
-        printf("7. Modify Rectangle\n");
-        printf("8. Display Board\n");
-        printf("9. Exit\n");
-
-        printf("Enter choice: ");
-        scanf("%d", &ch);
-
-        if(ch == 1)
-        {
-            int sr, sc, w, h;
-
-            printf("Enter row: ");
-            scanf("%d", &sr);
-
-            printf("Enter column: ");
-            scanf("%d", &sc);
-
-            printf("Enter width: ");
-            scanf("%d", &w);
-
-            printf("Enter height: ");
-            scanf("%d", &h);
-
-            drawRect(sr, sc, w, h);
-        }
-
-        else if(ch == 2)
-        {
-            int r, sc, len;
-
-            printf("Enter row: ");
-            scanf("%d", &r);
-
-            printf("Enter starting column: ");
-            scanf("%d", &sc);
-
-            printf("Enter length: ");
-            scanf("%d", &len);
-
-            drawHLine(r, sc, len);
-        }
-
-        else if(ch == 3)
-        {
-            int sr, c, len;
-
-            printf("Enter starting row: ");
-            scanf("%d", &sr);
-
-            printf("Enter column: ");
-            scanf("%d", &c);
-
-            printf("Enter length: ");
-            scanf("%d", &len);
-
-            drawVLine(sr, c, len);
-        }
-
-        else if(ch == 4)
-        {
-            int sr, sc, h;
-
-            printf("Enter starting row: ");
-            scanf("%d", &sr);
-
-            printf("Enter starting column: ");
-            scanf("%d", &sc);
-
-            printf("Enter height: ");
-            scanf("%d", &h);
-
-            drawTriangle(sr, sc, h);
-        }
-
-        else if(ch == 5)
-        {
-            int cr, cc, rad;
-
-            printf("Enter center row: ");
-            scanf("%d", &cr);
-
-            printf("Enter center column: ");
-            scanf("%d", &cc);
-
-            printf("Enter radius: ");
-            scanf("%d", &rad);
-
-            drawCircle(cr, cc, rad);
-        }
-
-        else if(ch == 6)
-        {
-            int sr, sc, w, h;
-
-            printf("Enter starting row: ");
-            scanf("%d", &sr);
-
-            printf("Enter starting column: ");
-            scanf("%d", &sc);
-
-            printf("Enter width: ");
-            scanf("%d", &w);
-
-            printf("Enter height: ");
-            scanf("%d", &h);
-
-            eraseArea(sr, sc, w, h);
-        }
-
-        else if(ch == 7)
-        {
-            modifyRectangle();
-        }
-
-        else if(ch == 8)
-        {
-            showBoard();
-        }
-
-        else if(ch == 9)
-        {
-            printf("Exiting Program...\n");
-        }
-
-        else
-        {
-            printf("Invalid Choice!\n");
+    bool running = true;
+    while(running) {
+        drawUI();
+        
+        int ch = _getch();
+        
+        // Handle extended keys (arrow keys)
+        if (ch == 0 || ch == 224) {
+            ch = _getch(); // read actual key code
+            switch(ch) {
+                case 72: // Up
+                    if (cursorRow > 0) cursorRow--;
+                    break;
+                case 80: // Down
+                    if (cursorRow < BOARD_ROWS - 1) cursorRow++;
+                    break;
+                case 75: // Left
+                    if (cursorCol > 0) cursorCol--;
+                    break;
+                case 77: // Right
+                    if (cursorCol < BOARD_COLS - 1) cursorCol++;
+                    break;
+            }
+        } else {
+            switch(ch) {
+                case 'w': case 'W':
+                    if (cursorRow > 0) cursorRow--;
+                    break;
+                case 's': case 'S':
+                    if (cursorRow < BOARD_ROWS - 1) cursorRow++;
+                    break;
+                case 'a': case 'A':
+                    if (cursorCol > 0) cursorCol--;
+                    break;
+                case 'd': case 'D':
+                    if (cursorCol < BOARD_COLS - 1) cursorCol++;
+                    break;
+                case '1': currentTool = TOOL_DRAW; point1Set = false; break;
+                case '2': currentTool = TOOL_ERASE; point1Set = false; break;
+                case '3': currentTool = TOOL_RECTANGLE; point1Set = false; break;
+                case '4': currentTool = TOOL_HLINE; point1Set = false; break;
+                case '5': currentTool = TOOL_VLINE; point1Set = false; break;
+                case '6': currentTool = TOOL_CIRCLE; point1Set = false; break;
+                case '7': currentTool = TOOL_TRIANGLE; point1Set = false; break;
+                case ' ': // Space
+                case 13:  // Enter
+                    handleAction();
+                    break;
+                case 'c': case 'C': // Clear
+                    initBoard();
+                    point1Set = false;
+                    break;
+                case 'q': case 'Q': case 27: // ESC
+                    running = false;
+                    break;
+            }
         }
     }
-
+    
+    system("cls");
+    setColor(15, 0);
+    printf("Exiting Graphics Editor...\n");
     return 0;
 }
