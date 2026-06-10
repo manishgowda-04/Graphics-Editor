@@ -1,0 +1,365 @@
+2D GRAPHICS EDITOR MINI PROJECT – COMPLETE PROMPT HISTORY WITH RESPONSES AND CODE
+
+---
+
+## DAY 1 – BASIC GRAPHICS BOARD
+
+Prompt:
+Create a basic 2D graphics editor using C programming language and a 2D character array using '*' and '_' characters.
+
+Response:
+Generated initial C program containing:
+
+* 2D character array board[20][50]
+* Board initialization function
+* Display function using nested loops
+
+Code Generated:
+
+char board[20][50];
+
+void initBoard()
+{
+int r, c;
+
+```
+for(r = 0; r < 20; r++)
+{
+    for(c = 0; c < 50; c++)
+    {
+        board[r][c] = '_';
+    }
+}
+```
+
+}
+
+void showBoard()
+{
+int r, c;
+
+```
+for(r = 0; r < 20; r++)
+{
+    for(c = 0; c < 50; c++)
+    {
+        printf("%c", board[r][c]);
+    }
+
+    printf("\n");
+}
+```
+
+}
+
+Features Completed:
+
+* Graphics board creation
+* Display functionality
+* Board initialization
+
+---
+
+## DAY 2 – RECTANGLE AND LINE DRAWING
+
+Prompt:
+Add rectangle drawing functionality with user input for row, column, width, and height.
+
+Response:
+Generated drawRect() function using nested loops and boundary conditions.
+
+Code Generated:
+
+void drawRect(int sr, int sc, int w, int h)
+{
+int r, c;
+
+```
+for(r = sr; r < sr + h; r++)
+{
+    for(c = sc; c < sc + w; c++)
+    {
+        if(r == sr || r == sr + h - 1 ||
+           c == sc || c == sc + w - 1)
+        {
+            board[r][c] = '*';
+        }
+    }
+}
+```
+
+}
+
+---
+
+Prompt:
+Add horizontal line and vertical line drawing features.
+
+Response:
+Implemented line drawing functions using loops.
+
+Code Generated:
+
+void drawHLine(int r, int sc, int len)
+{
+int c;
+
+```
+for(c = sc; c < sc + len; c++)
+{
+    board[r][c] = '*';
+}
+```
+
+}
+
+void drawVLine(int sr, int c, int len)
+{
+int r;
+
+```
+for(r = sr; r < sr + len; r++)
+{
+    board[r][c] = '*';
+}
+```
+
+}
+
+Features Completed:
+
+* Rectangle drawing
+* Horizontal line drawing
+* Vertical line drawing
+
+---
+
+## DAY 3 – TRIANGLE AND CIRCLE
+
+Prompt:
+Add triangle drawing functionality.
+
+Response:
+Generated triangle drawing function using nested loops.
+
+Code Generated:
+
+void drawTriangle(int sr, int sc, int h)
+{
+int r, c;
+
+```
+for(r = 0; r < h; r++)
+{
+    for(c = 0; c <= r; c++)
+    {
+        board[sr + r][sc + c] = '*';
+    }
+}
+```
+
+}
+
+---
+
+Prompt:
+Add circle drawing functionality using mathematical calculations.
+
+Response:
+Implemented circle drawing logic using radius formula.
+
+Code Generated:
+
+void drawCircle(int cr, int cc, int rad)
+{
+int r, c;
+
+```
+for(r = 0; r < 20; r++)
+{
+    for(c = 0; c < 50; c++)
+    {
+        int dx = r - cr;
+        int dy = c - cc;
+
+        if(dx * dx + dy * dy <= rad * rad)
+        {
+            board[r][c] = '*';
+        }
+    }
+}
+```
+
+}
+
+Features Completed:
+
+* Triangle drawing
+* Circle drawing
+
+---
+
+## DAY 4 – DELETE AND MODIFY FEATURES
+
+Prompt:
+Add delete functionality to remove objects from selected areas.
+
+Response:
+Generated erase function to clear selected area.
+
+Code Generated:
+
+void eraseArea(int sr, int sc, int w, int h)
+{
+int r, c;
+
+```
+for(r = sr; r < sr + h; r++)
+{
+    for(c = sc; c < sc + w; c++)
+    {
+        board[r][c] = '_';
+    }
+}
+```
+
+}
+
+---
+
+Prompt:
+Add modify functionality to edit shapes already drawn on the board.
+
+Response:
+Implemented modify logic using delete and redraw method.
+
+Code Generated:
+
+void modifyRectangle()
+{
+eraseArea(oldSr, oldSc, oldW, oldH);
+
+```
+drawRect(newSr, newSc, newW, newH);
+```
+
+}
+
+Features Completed:
+
+* Delete functionality
+* Modify functionality
+
+---
+
+## DAY 5 – ADVANCED INTERACTIVE EDITOR
+
+Prompt:
+Improve the project using continuous menu system and multiple object support.
+
+Response:
+Enhanced project using while loop menu and persistent board display.
+
+Code Generated:
+
+while(ch != 9)
+{
+printf("1. Rectangle\n");
+printf("2. Horizontal Line\n");
+printf("3. Vertical Line\n");
+printf("4. Triangle\n");
+printf("5. Circle\n");
+}
+
+---
+
+Prompt:
+Improve the graphics editor using interactive console controls and keyboard movement.
+
+Response:
+Generated advanced interactive editor using:
+
+* arrow key movement
+* cursor positioning
+* tool selection
+* real-time drawing
+
+Code Generated:
+
+switch(ch)
+{
+case 72:
+cursorRow--;
+break;
+
+```
+case 80:
+    cursorRow++;
+    break;
+
+case 75:
+    cursorCol--;
+    break;
+
+case 77:
+    cursorCol++;
+    break;
+```
+
+}
+
+---
+
+Prompt:
+Add erase tool and clear board feature.
+
+Response:
+Generated erase mode and board clearing functionality.
+
+Code Generated:
+
+case 'c':
+case 'C':
+initBoard();
+point1Set = false;
+break;
+
+Features Completed:
+
+* Interactive cursor movement
+* Real-time drawing
+* Tool selection system
+* Keyboard controls
+* Clear board feature
+
+---
+
+## README AND DOCUMENTATION
+
+Prompt:
+Create a professional README file for the GitHub repository.
+
+Response:
+Generated README documentation containing:
+
+* project description
+* features
+* controls
+* technologies used
+* platform details
+
+---
+
+## TECHNOLOGIES USED
+
+* C Programming
+* Git & GitHub
+* VS Code
+* Windows Console Functions
+* Generative AI Assistance
+
+---
+
+## PROJECT DEVELOPED BY
+
+Manish Gowda L
